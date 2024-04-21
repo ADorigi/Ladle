@@ -8,6 +8,13 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+func NewIssuer(projectname string, secretKey string) Issuer {
+	return Issuer{
+		ProjectName: projectname,
+		SecretKey:   secretKey,
+	}
+}
+
 func (i Issuer) CreateJWT(data Payload) (string, error) {
 
 	if i.SecretKey == "" {

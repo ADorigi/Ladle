@@ -3,7 +3,6 @@ package ladle
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -15,22 +14,13 @@ func NewIssuer(projectname string, secretKey string) Issuer {
 	}
 }
 
-func (i Issuer) CreateJWT(data Payload) (string, error) {
+func (i Issuer) CreateJWT(claims *JWTClaims) (string, error) {
 
 	if i.SecretKey == "" {
 		return "", errors.New("empty secret key")
 	}
 
-	expirationTime := time.Now().Add(time.Minute * 30)
-	claims := JWTClaims{
-		Data: data,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expirationTime),
-			Issuer:    i.ProjectName,
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, *claims)
 
 	tokenString, err := token.SignedString([]byte(i.SecretKey))
 	if err != nil {
@@ -58,7 +48,7 @@ func (i Issuer) ValidateJWT(ctx context.Context, tokenString string) (context.Co
 		return nil, errors.New("error reading claims in jwt")
 	}
 
-	contextWithClaims := context.WithValue(ctx, Claimtype("claims"), claims)
+	contextWithClaims := context.WithValue(ctx, Claims("claims"), claims)
 
 	return contextWithClaims, nil
 }

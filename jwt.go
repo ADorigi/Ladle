@@ -3,6 +3,7 @@ package ladle
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -11,6 +12,21 @@ func NewIssuer(projectname string, secretKey string) Issuer {
 	return Issuer{
 		ProjectName: projectname,
 		SecretKey:   secretKey,
+	}
+}
+
+func (i Issuer) NewJWTClaims(id uint, firstname string) *JWTClaims {
+
+	expirationTime := time.Now().Add(time.Minute * 30) // 30 minutes from now
+
+	return &JWTClaims{
+		Id:        id,
+		FirstName: firstname,
+		RegisteredClaims: jwt.RegisteredClaims{
+			// Also fixed dates can be used for the NumericDate
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
+			Issuer:    i.ProjectName,
+		},
 	}
 }
 
